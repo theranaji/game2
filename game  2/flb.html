@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #game-board {
+            margin: 0 auto;
+            width: 500px;
+            height: 500px;
+            border: 2px solid #000;
+            position: relative;
+        }
+        .snake, .food {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+        }
+        .snake {
+            background-color: green;
+        }
+        .food {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <div id="game-board"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const gameBoard = document.getElementById("game-board");
+            const gridSize = 15;
+            const cellSize = gameBoard.offsetWidth / gridSize;
+            let snake = [{ x: 5, y: 5 }];
+            let food = getRandomFoodPosition();
+            let direction = "right";
+            let gameOver = false;
+
+            function getRandomFoodPosition() {
+                const x = Math.floor(Math.random() * gridSize);
+                const y = Math.floor(Math.random() * gridSize);
+                return { x, y };
+            }
+
+            function draw() {
+                if (gameOver) return;
+
+                // Clear the board
+                gameBoard.innerHTML = "";
+
+                // Draw the food
+                const foodElement = document.createElement("div");
+                foodElement.classList.add("food");
+                foodElement.style.left = food.x * cellSize + "px";
+                foodElement.style.top = food.y * cellSize + "px";
+                gameBoard.appendChild(foodElement);
+
+                // Draw the snake
+                snake.forEach(segment => {
+                    const snakeSegment = document.createElement("div");
+                    snakeSegment.classList.add("snake");
+                    snakeSegment.style.left = segment.x * cellSize + "px";
+                    snakeSegment.style.top = segment.y * cellSize + "px";
+                    gameBoard.appendChild(snakeSegment);
+                });
+            }
+
+            function move() {
+                if (gameOver) return;
+
+                // Update snake's head based on direction
+                let newHead = { ...snake[0] };
+                switch (direction) {
+                    case "up":
+                        newHead.y--;
+                        break;
+                    case "down":
+                        newHead.y++;
+                        break;
+                    case "left":
+                        newHead.x--;
+                        break;
+                    case "right":
+                        newHead.x++;
+                        break;
+                }
+
+                // Check for collision with food
+                if (newHead.x === food.x && newHead.y === food.y) {
+                    snake.unshift(newHead);
+                    food = getRandomFoodPosition();
+                } else {
+                    // Remove the last segment of the snake
+                    snake.pop();
+                    snake.unshift(newHead);
+
+                    // Check for collisions with walls or itself
+                    if (
+                        newHead.x < 0 ||
+                        newHead.x >= gridSize ||
+                        newHead.y < 0 ||
+                        newHead.y >= gridSize ||
+                        snake.slice(1).some(segment => segment.x === newHead.x && segment.y === newHead.y)
+                    ) {
+                        gameOver = true;
+                        alert("Game over!");
+                    }
+                }
+
+                draw();
+            }
+
+            document.addEventListener("keydown", function(event) {
+                switch (event.key) {
+                    case "ArrowUp":
+                        if (direction !== "down") direction = "up";
+                        break;
+                    case "ArrowDown":
+                        if (direction !== "up") direction = "down";
+                        break;
+                    case "ArrowLeft":
+                        if (direction !== "right") direction = "left";
+                        break;
+                    case "ArrowRight":
+                        if (direction !== "left") direction = "right";
+                        break;
+                }
+            });
+
+            setInterval(move, 200);
+
+            draw();
+            
+        });
+    </script>
+</body>
+</html>
